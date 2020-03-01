@@ -2,18 +2,16 @@ import datetime
 import sqlite3
 import telebot
 import config
-import random
+import logging
 from telebot import types
 from create_db import create_table, add_summ, i_got, count, get_all
+import bot_log
 
-from telebot import apihelper
-
+logger = logging.getLogger('muBot')
 
 bot = telebot.TeleBot(config.TOKEN)
 date = datetime.datetime.now()
 month = date.strftime('%B_%Y')
-# apihelper.proxy = {'http': 'http://11ce8230.ngrok.io'}
-# apihelper.proxy = {'https': 'socks4://userproxy:password@109.87.183.226:4145'}
 
 
 @bot.message_handler(commands=['start'])
@@ -59,7 +57,8 @@ def dialog(message):
                 summa = i_got(table_name)
                 bot.send_message(message.chat.id, 'Эм... \n' + str(summa) + ' братка')
             except Exception as e:
-                print('Ошибка вывода общей суммы: ' + repr(e))
+                # print('Ошибка вывода общей суммы: ' + repr(e))
+                logger.error('Ошибка вывода общей суммы: ' + repr(e))
                 bot.send_message(message.chat.id,
                                  'Новый месяц ещё не заведен в базе :(\nЖмакай'
                                  ' на кнопку "Новый месяц"')
@@ -69,7 +68,8 @@ def dialog(message):
                 bot.send_message(message.chat.id, 'Готово!\nНовый месяц "'
                                  + str(table_name) + '" дабавлен ;)')
             except Exception as e:
-                print('Ошибка создания таблицы: ' + repr(e))
+                # print('Ошибка создания таблицы: ' + repr(e))
+                logger.error('Ошибка создания таблицы: ' + repr(e))
                 bot.send_message(message.chat.id,
                                  'Этот месяц "' + table_name + '" уже создан')
 
@@ -93,7 +93,7 @@ def dialog(message):
                         bot.send_message(message.chat.id,
                                          'Мало!\nну сколько заработал {0}'
                                          .format(u"\U0001F595"))
-                    elif int(message.text) >= 500 and int(message.text) < 1000:
+                    elif (int(message.text) >= 500) and (int(message.text) < 1000):
                         add_summ(message.text, table_name)
                         bot.send_message(message.chat.id, message.text +
                                          ' номально вышло, но нужно подтянуть'
@@ -104,7 +104,8 @@ def dialog(message):
                                          ' - вот номально вышло, умеешь же {0}'
                                          .format(u"\U0001F4AA"))
                 except Exception as e:
-                    print('Ошибка ввода сообщения: ' + repr(e))
+                    # print('Ошибка ввода сообщения: ' + repr(e))
+                    logger.error('Ошибка ввода сообщения: ' + repr(e))
                     bot.send_message(message.chat.id,
                                      'Нужно цыфры воодить! \nА если не создал '
                                      'новый месяц, то скорее жмакай на'
@@ -147,7 +148,8 @@ def callback_inline(call):
                                       show_alert=False,
                                       text="Я ЗАПОМНИЛ ;) ")
     except Exception as e:
-        print('Ошибка callback_query: ' + repr(e))
+        # print('Ошибка callback_query: ' + repr(e))
+        logger.error('Ошибка callback_query: ' + repr(e))
 
 
 # RUN
